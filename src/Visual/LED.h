@@ -30,18 +30,6 @@
 
 class LED {
 public:
-    // Configures which LED channel to use
-    static void set_color(uint8_t index, uint8_t red, uint8_t green, uint8_t blue)
-    {
-        // Calculate color index
-        uint8_t color_index = index * 3;
-        
-        // Dimm color channels
-        dimming(color_index, 255, red);
-        dimming(color_index + 1, 255, green);
-        dimming(color_index + 2, 255, blue);
-    }
-
     // Initialize LED Driver
     static void begin()
     {

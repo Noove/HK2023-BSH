@@ -11,11 +11,9 @@ void setup()
     Wire.begin();
     LED::begin();
 
-    for (uint8_t index = 0; index < 16; index++)
+    for (uint8_t index = 0; index < 4; index++)
     {
-        LED::set_color(index, 255, 0, 0);
-        delay(100);
-        LED::set_color(15 - index, 255, 255, 0);
+        Matrix::set_pixel(2, index, 0, 100, 100);
     }
 }
  
