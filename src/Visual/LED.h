@@ -31,13 +31,15 @@
 class LED {
 public:
     // Configures which LED channel to use
-    static void set_color(uint16_t index, uint8_t red, uint8_t green, uint8_t blue)
+    static void set_color(uint8_t index, uint8_t red, uint8_t green, uint8_t blue)
     {
-        // Calculate 
+        // Calculate color index
+        uint8_t color_index = index * 3;
+        
         // Dimm color channels
-        dimming(index, 255, red);
-        dimming(index + 1, 255, green);
-        dimming(index + 2, 255, blue);
+        dimming(color_index, 255, red);
+        dimming(color_index + 1, 255, green);
+        dimming(3, 255, blue);
     }
 
     // Initialize LED Driver
@@ -54,23 +56,30 @@ public:
         // Get LED driver address and channel
         uint8_t addresses[] = { LED1202_DEV1_ADDR, LED1202_DEV2_ADDR, LED1202_DEV3_ADDR, LED1202_DEV4_ADDR};
         uint8_t address = addresses[index / 12];
-        uint8_t channel = pow(2, index % 12);
+        uint16_t channel = pow(2, index % 12);
 
         // Disable channel if brightness is 0
-        toggle_channel(address, channel, digital > 0);
+        if(digital > 0)
+        {
+            toggle_channel(address, channel, true);
 
-        // Analog Dimming
-        write_reg(address, (LED1202_CS0_LED_CURRENT + channel), &analog, 1); 
+            // Analog Dimming
+            write_reg(address, (LED1202_CS0_LED_CURRENT + channel), &analog, 1); 
 
-        // Digital dimming
-        uint8_t channel_offset = (((uint8_t)2)*channel) + (((uint8_t)24)*0);
-        if(channel == 1) channel_offset = 0;
-        write_reg(address,(uint8_t)(LED1202_PATTERN0_CS0_PWM + channel_offset), (uint8_t *)&digital, 2); 
+            // Digital dimming
+            uint16_t channel_offset = (((uint16_t)2)*channel) + (((uint16_t)24)*0);
+            if(channel == 1) channel_offset = 0;
+            write_reg(address,(uint8_t)(LED1202_PATTERN0_CS0_PWM + channel_offset), (uint8_t *)&digital, 2); 
+        }
+        else
+        {
+            toggle_channel(address, channel, false);
+        }
     }
 
 private:
     // Enable/disable LED channel
-    static void toggle_channel(uint8_t address, uint8_t channel, bool enable)
+    static void toggle_channel(uint8_t address, uint16_t channel, bool enable)
     {
         // Read current status
         uint16_t readReg, chRegVal;
@@ -80,8 +89,7 @@ private:
         if(enable)
         {
             chRegVal = readReg | channel;
-            write_reg(address, LED1202_LED_CH_ENABLE, (uint8_t *)&chRegVal, 2);
-            
+            write_reg(address, LED1202_LED_CH_ENABLE, (uint8_t *)&chRegVal, 2);   
         }
         else
         {
