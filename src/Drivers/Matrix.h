@@ -10,6 +10,8 @@ public:
     {
         uint8_t index = y * 4 + 3 - x;
 
+        uint8_t reverseIndex = 
+
         Serial.print("x: ");
         Serial.print(x);
         Serial.print(" | y: ");
@@ -37,8 +39,8 @@ private:
         Serial.println(color_index + 2);
         
         // Dimm color channels
-        LED::dimming(color_index, 20, red);
-        LED::dimming(color_index + 1, 20, green);
-        LED::dimming(color_index + 2, 20, blue);
+        // LED::dimming(color_index, 20, red);
+        // LED::dimming(color_index + 1, 20, green);
+        // LED::dimming(color_index + 2, 20, blue);
     }
 };

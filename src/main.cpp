@@ -19,9 +19,15 @@ void setup()
 
 // Matrix::set_pixel(2, 2, 255, 192, 203);
 
-    for (uint8_t x = 0; x < 4; x++)
+    for (uint8_t y = 0; y < 4; y++)
     {
-        for (uint8_t y = 0; y < 4; y++) Matrix::set_pixel(x, y, 255, 192, 203);
+        for (uint8_t x = 0; x < 4; x++) {
+            LED::set_pixel(x, y, 255, 192, 203);
+            LED::set_color(x, y, 255, 192, 203);
+            // LED::set_pixel(x, y, 255, 0, 0);
+            delay(800);
+            // LED::set_pixel(x, y, 0, 0, 0);
+        }
     }
 }
  
