@@ -18,6 +18,7 @@
 // LED Driver Registers
 #define LED1202_DEVICE_ENABLE      ((uint8_t)0x01)
 #define LED1202_LED_CH_ENABLE      ((uint8_t)0x02)
+#define LED1202_CLK_CONFIG         ((uint8_t)0xE0)
 #define LED1202_CS0_LED_CURRENT  ((uint8_t)0x09)
 #define LED1202_PATTERN0_CS0_PWM  ((uint8_t)0x1E)
 
@@ -33,35 +34,45 @@ public:
     // Initialize LED Driver
     static void begin()
     {
-        uint8_t init_data = 0x01;
-        LED::write_reg(LED1202_GLOBAL_ADDR, LED1202_DEVICE_ENABLE, &init_data, 1);
-        LED::write_reg(LED1202_GLOBAL_ADDR, LED1202_LED_CH_ENABLE, 0x0000, 2);
+        uint8_t in = 0x01;
+        LED::write_reg(LED1202_GLOBAL_ADDR, LED1202_DEVICE_ENABLE, &in, 1);
+        LED::toggle_channel(LED1202_GLOBAL_ADDR, (uint16_t)0x0FFFU, false);
     }
 
     // Control analog and digital dimming
-    static void dimming(uint8_t index, uint8_t analog, uint16_t digital)
+    static void dimming(uint8_t index, uint8_t digital, uint8_t analog)
     {
         // Get LED driver address and channel
         uint8_t addresses[] = { LED1202_DEV1_ADDR, LED1202_DEV2_ADDR, LED1202_DEV3_ADDR, LED1202_DEV4_ADDR};
+        uint16_t channel_pwm =  index / 12;
         uint8_t address = addresses[index / 12];
-        uint16_t channel = pow(2, index % 12);
+
+        uint16_t channel_enable = pow(2, index % 12);
 
         // Disable channel if brightness is 0
         if(digital > 0)
         {
-            toggle_channel(address, channel, true);
+            toggle_channel(address, channel_enable, true);
 
             // Analog Dimming
-            write_reg(address, (LED1202_CS0_LED_CURRENT + channel), &analog, 1); 
+            write_reg(address, (LED1202_CS0_LED_CURRENT + channel_pwm), &analog, 1); 
 
             // Digital dimming
-            uint16_t channel_offset = (((uint16_t)2)*channel) + (((uint16_t)24)*0);
-            if(channel == 1) channel_offset = 0;
-            write_reg(address,(uint8_t)(LED1202_PATTERN0_CS0_PWM + channel_offset), (uint8_t *)&digital, 2); 
+            uint16_t channel_offset = (((uint16_t)2)*channel_pwm);
+
+ Serial.print("index: ");
+        Serial.print(index);
+        Serial.print("  channel: ");
+        Serial.println(channel_pwm);
+            // Serial.println(channel_offset);
+            // if(channel == 1) channel_offset = 0;
+            write_reg(address,(uint8_t)(LED1202_PATTERN0_CS0_PWM + 0x01 + channel_pwm * 2), (uint8_t *)&digital, 2); 
+
+            // read_reg(address,(uint8_t)(LED1202_PATTERN0_CS0_PWM + channel_offset), 2);
         }
         else
         {
-            toggle_channel(address, channel, false);
+            toggle_channel(address, channel_enable, false);
         }
     }
 
@@ -111,6 +122,11 @@ private:
         Wire.requestFrom(addr, len);        
         byte MSB = Wire.read();
         byte LSB = Wire.read();
+        // Serial.print(reg,HEX);
+        // Serial.print(":");
+        // Serial.print(MSB,BIN);
+        // Serial.print(",");
+        // Serial.println(LSB,BIN);
         return(LSB << 8) | MSB;
     }
 };
