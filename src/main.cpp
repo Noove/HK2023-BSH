@@ -1,5 +1,6 @@
-#include <Arduino.h>
+// Includes
 #include <Visual/LED.h>
+#include <Visual/Matrix.h>
  
 void setup()
 {
@@ -9,15 +10,12 @@ void setup()
     // Init LED Driver
     Wire.begin();
     LED::begin();
+
+    // Matrix::toggle_led(3, 4);
     
-    for (uint8_t channel = 0;channel<=11;channel++)
+    for (uint8_t index = 0;index<=48;index++)
     {
-        LED::set_channel(LED1202_DEV1_7BIT_ADDR, pow(2, channel), true);
-        delay(200);
-    }
-    for (uint8_t channel = 11;channel>=0;channel--)
-    {
-        LED::set_channel(LED1202_DEV1_7BIT_ADDR, pow(2, channel), false);
+        LED::set_channel(index, true);
         delay(200);
     }
 }
