@@ -39,7 +39,7 @@ public:
         // Dimm color channels
         dimming(color_index, 255, red);
         dimming(color_index + 1, 255, green);
-        dimming(3, 255, blue);
+        dimming(color_index + 2, 255, blue);
     }
 
     // Initialize LED Driver

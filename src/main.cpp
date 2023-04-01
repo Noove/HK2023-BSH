@@ -11,11 +11,11 @@ void setup()
     Wire.begin();
     LED::begin();
 
-    for (uint8_t index = 0; index < 48;index++)
+    for (uint8_t index = 0; index < 16; index++)
     {
-        LED::dimming(index, 255, 255);
-        delay(200);
-        LED::dimming(index, 255, 0);
+        LED::set_color(index, 255, 0, 0);
+        delay(100);
+        LED::set_color(15 - index, 255, 255, 0);
     }
 }
  
