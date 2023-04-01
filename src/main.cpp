@@ -1,5 +1,4 @@
 // Includes
-#include <Drivers/LED.h>
 #include <Drivers/Matrix.h>
 #include <Drivers/Sensor.h>
 
@@ -10,7 +9,7 @@ void setup()
 
     // Devices
     Wire.begin();
-    LED::begin();
+    Matrix::begin();
     Sensor::begin();
 
     for (uint8_t i = 0; i < 255; i++)
@@ -19,7 +18,7 @@ void setup()
         {
             for (uint8_t x = 0; x < 4; x++)
             {
-                LED::set_pixel(x, y, i, 255 - i, 0);
+                Matrix::set_pixel(x, y, i, 255 - i, 0);
             }
         }
     }

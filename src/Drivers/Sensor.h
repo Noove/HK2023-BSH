@@ -2,7 +2,6 @@
 
 // Includes
 #include <Arduino.h>
-#include <Drivers/LED.h>
 #include <LSM6DSOSensor.h>
 
 LSM6DSOSensor AccGyr(&Wire);

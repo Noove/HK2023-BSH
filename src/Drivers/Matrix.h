@@ -2,45 +2,116 @@
 
 // Includes
 #include <Arduino.h>
-#include <Drivers/LED.h>
+#include <Wire.h>
 
-class Matrix {
+/* -------------------------------------------------------------------------- */
+/*                             LED Driver Adresses                            */
+/* -------------------------------------------------------------------------- */
+
+// LED Driver Devices
+#define LED1202_DEV1_ADDR (0x58)
+#define LED1202_DEV2_ADDR (0x59)
+#define LED1202_DEV3_ADDR (0x5A)
+#define LED1202_DEV4_ADDR (0x5B)
+#define LED1202_GLOBAL_ADDR (0x5C)
+
+// LED Driver Registers
+#define LED1202_DEVICE_ENABLE ((uint8_t)0x01)
+#define LED1202_LED_CH_ENABLE ((uint8_t)0x02)
+#define LED1202_CLK_CONFIG ((uint8_t)0xE0)
+#define LED1202_CS0_LED_CURRENT ((uint8_t)0x09)
+#define LED1202_PATTERN0_CS0_PWM ((uint8_t)0x1E)
+
+/* -------------------------------------------------------------------------- */
+/*                            Low Level LED Driver                            */
+/* -------------------------------------------------------------------------- */
+
+class Matrix
+{
 public:
-    static void set_pixel(uint8_t x, uint8_t y, uint8_t red, uint8_t green, uint8_t blue)
+    // Initialize LED Driver
+    static void begin()
     {
-        uint8_t index = y * 4 + 3 - x;
+        uint8_t in = 0x01;
+        write_reg(LED1202_GLOBAL_ADDR, LED1202_DEVICE_ENABLE, &in, 1);
+        toggle_subpixel(LED1202_GLOBAL_ADDR, (uint16_t)0x0FFFU, false);
+    }
 
-        uint8_t reverseIndex = 
+    // Control analog and digital dimming
+    static void set_pixel(uint8_t x, uint8_t y, uint8_t r, uint8_t g, uint8_t b)
+    {
+        // Calculate LED position in row
+        uint8_t led_index = (3 - x) * 3;
 
-        Serial.print("x: ");
-        Serial.print(x);
-        Serial.print(" | y: ");
-        Serial.print(y);
-        Serial.print(" | index: ");
-        Serial.println(index);
+        // Get LED driver address
+        uint8_t addresses[] = {LED1202_DEV1_ADDR, LED1202_DEV2_ADDR, LED1202_DEV3_ADDR, LED1202_DEV4_ADDR};
+        uint8_t address = addresses[y];
 
-        set_index(index, red, green, blue);
+        // Set subpixel color and power
+        set_subpixel(address, led_index, r, g, b);
     }
 
 private:
-    // Sets a RGB color on a index
-    static void set_index(uint8_t index, uint8_t red, uint8_t green, uint8_t blue)
+    // Control LED power and PWM dimming
+    static void set_subpixel(uint8_t address, uint8_t index, uint8_t red, uint8_t green, uint8_t blue)
     {
-        // Calculate color index
-        uint8_t color_index = index * 3;
+        // Enable correct LED channels
+        toggle_subpixel(address, pow(2, index), red > 0);        // Red channel
+        toggle_subpixel(address, pow(2, index + 1), green > 0);  // Green channel
+        toggle_subpixel(address, pow(2, index + 2), blue > 0);   // Blue channel
 
-        Serial.print("index: ");
-        Serial.print(index);
-        Serial.print(" | rindex: ");
-        Serial.print(color_index);
-        Serial.print(" | gindex: ");
-        Serial.print(color_index + 1);
-        Serial.print(" | bindex: ");
-        Serial.println(color_index + 2);
-        
-        // Dimm color channels
-        // LED::dimming(color_index, 20, red);
-        // LED::dimming(color_index + 1, 20, green);
-        // LED::dimming(color_index + 2, 20, blue);
+        // Set color with PWM
+        write_reg(address, (uint8_t)(LED1202_PATTERN0_CS0_PWM + 0x01 + index * 2), (uint8_t *)&red, 2);
+        write_reg(address, (uint8_t)(LED1202_PATTERN0_CS0_PWM + 0x01 + (index + 1) * 2), (uint8_t *)&green, 2);
+        write_reg(address, (uint8_t)(LED1202_PATTERN0_CS0_PWM + 0x01 + (index + 2) * 2), (uint8_t *)&blue, 2);
+    }
+
+    // Enable/disable LED channel
+    static void toggle_subpixel(uint8_t address, uint16_t channel, bool enable)
+    {
+        // Read current status
+        uint16_t readReg, chRegVal;
+        readReg = read_reg(address, LED1202_LED_CH_ENABLE, 2);
+
+        // Write LED enable register
+        if (enable)
+        {
+            chRegVal = readReg | channel;
+            write_reg(address, LED1202_LED_CH_ENABLE, (uint8_t *)&chRegVal, 2);
+        }
+        else
+        {
+            chRegVal = readReg & (~channel);
+            write_reg(address, LED1202_LED_CH_ENABLE, (uint8_t *)&chRegVal, 2);
+        }
+    }
+
+    // Writes register to I2C
+    static void write_reg(uint8_t addr, uint8_t reg, uint8_t *data, uint8_t len)
+    {
+        // Start transmission
+        Wire.beginTransmission(addr);
+        Wire.write(reg);
+
+        // Write data
+        for (size_t i = 0; i < len; ++i)
+            Wire.write(data[i]);
+
+        Wire.endTransmission();
+    }
+
+    // Reads register from I2C
+    static uint16_t read_reg(uint8_t addr, uint8_t reg, int len)
+    {
+        // Request data from register
+        Wire.beginTransmission(addr);
+        Wire.write(reg);
+        Wire.endTransmission();
+
+        // Read data from register
+        Wire.requestFrom(addr, len);
+        byte MSB = Wire.read();
+        byte LSB = Wire.read();
+        return (LSB << 8) | MSB;
     }
 };
