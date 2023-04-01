@@ -18,6 +18,11 @@
 // LED Driver Registers
 #define LED1202_DEVICE_ENABLE      ((uint8_t)0x01)
 #define LED1202_LED_CH_ENABLE      ((uint8_t)0x02)
+#define LED1202_CS0_LED_CURRENT  ((uint8_t)0x09)
+#define LED1202_PATTERN0_CS0_PWM  ((uint8_t)0x1E)
+
+// HW config
+#define MAX_CH_CURRENT 20
 
 /* -------------------------------------------------------------------------- */
 /*                            Low Level LED Driver                            */
@@ -26,28 +31,13 @@
 class LED {
 public:
     // Configures which LED channel to use
-    static void set_channel(uint16_t index, bool state)
+    static void set_color(uint16_t index, uint8_t red, uint8_t green, uint8_t blue)
     {
-        // Get LED driver address and channel number
-        uint16_t addresses[] = { LED1202_DEV1_ADDR, LED1202_DEV2_ADDR, LED1202_DEV3_ADDR, LED1202_DEV4_ADDR};
-        uint16_t address = addresses[index / 12];
-        uint16_t channel = pow(2, index % 12);
-
-        // Read current status
-        uint16_t readReg, chRegVal;
-        readReg = read_reg(address, LED1202_LED_CH_ENABLE, 2);
-        
-        // Change registers according to request
-        if(state)
-        {
-            chRegVal = readReg | channel;
-            write_reg(address, LED1202_LED_CH_ENABLE, (uint8_t *)&chRegVal, 2);
-        }
-        else
-        {
-            chRegVal = readReg & (~channel);  
-            write_reg(address, LED1202_LED_CH_ENABLE, (uint8_t *)&chRegVal, 2);
-        }
+        // Calculate 
+        // Dimm color channels
+        dimming(index, 255, red);
+        dimming(index + 1, 255, green);
+        dimming(index + 2, 255, blue);
     }
 
     // Initialize LED Driver
@@ -58,7 +48,48 @@ public:
         LED::write_reg(LED1202_GLOBAL_ADDR, LED1202_LED_CH_ENABLE, 0x0000, 2);
     }
 
+    // Control analog and digital dimming
+    static void dimming(uint8_t index, uint8_t analog, uint16_t digital)
+    {
+        // Get LED driver address and channel
+        uint8_t addresses[] = { LED1202_DEV1_ADDR, LED1202_DEV2_ADDR, LED1202_DEV3_ADDR, LED1202_DEV4_ADDR};
+        uint8_t address = addresses[index / 12];
+        uint8_t channel = pow(2, index % 12);
+
+        // Disable channel if brightness is 0
+        toggle_channel(address, channel, digital > 0);
+
+        // Analog Dimming
+        write_reg(address, (LED1202_CS0_LED_CURRENT + channel), &analog, 1); 
+
+        // Digital dimming
+        uint8_t channel_offset = (((uint8_t)2)*channel) + (((uint8_t)24)*0);
+        if(channel == 1) channel_offset = 0;
+        write_reg(address,(uint8_t)(LED1202_PATTERN0_CS0_PWM + channel_offset), (uint8_t *)&digital, 2); 
+    }
+
 private:
+    // Enable/disable LED channel
+    static void toggle_channel(uint8_t address, uint8_t channel, bool enable)
+    {
+        // Read current status
+        uint16_t readReg, chRegVal;
+        readReg = read_reg(address, LED1202_LED_CH_ENABLE, 2);
+
+        // Write LED enable register
+        if(enable)
+        {
+            chRegVal = readReg | channel;
+            write_reg(address, LED1202_LED_CH_ENABLE, (uint8_t *)&chRegVal, 2);
+            
+        }
+        else
+        {
+            chRegVal = readReg & (~channel);  
+            write_reg(address, LED1202_LED_CH_ENABLE, (uint8_t *)&chRegVal, 2);
+        }
+    }
+
     // Writes register to I2C
     static void write_reg(uint8_t addr, uint8_t reg, uint8_t *data, uint8_t len)
     {

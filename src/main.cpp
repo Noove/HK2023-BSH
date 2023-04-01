@@ -12,11 +12,12 @@ void setup()
     LED::begin();
 
     // Matrix::toggle_led(3, 4);
+    LED::set_color(5, 10, 0, 0);
     
-    for (uint8_t index = 0;index<=48;index++)
+    for (uint8_t index = 0;index<=4095;index++)
     {
-        LED::set_channel(index, true);
-        delay(200);
+        // LED::dimming(0, 255, index);
+        delay(20);
     }
 }
  
