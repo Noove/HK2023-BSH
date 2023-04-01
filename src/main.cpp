@@ -1,22 +1,17 @@
 // Includes
-#include <Visual/LED.h>
-#include <Visual/Matrix.h>
-#include <LSM6DSOSensor.h>
- 
-LSM6DSOSensor AccGyr(&Wire);
+#include <Drivers/LED.h>
+#include <Drivers/Matrix.h> 
+#include <Drivers/Sensor.h> 
 
 void setup()
 {
     Serial.begin(115200);
     Serial.println("Init");
 
-    // Init LED Driver
+    // Devices
     Wire.begin();
     LED::begin();
-
-    AccGyr.begin();
-    AccGyr.Enable_X();  
-    AccGyr.Enable_G();
+    Sensor::begin();
 
     for (uint8_t index = 0; index < 4; index++)
     {
@@ -26,15 +21,12 @@ void setup()
  
 void loop()
 {
-    int32_t accelerometer[3];
-    int32_t gyroscope[3];
-    AccGyr.Get_X_Axes(accelerometer);  
-    AccGyr.Get_G_Axes(gyroscope);
+    int8_t level[2];
+    Sensor::get_level(level);
+    Serial.print("Pitch: ");
+    Serial.print(level[0]);
+    Serial.print(" | Roll: ");
+    Serial.println(level[1]);
 
-    Serial.print(accelerometer[0]);
-    Serial.print(",");
-    Serial.print(gyroscope[1]);
-    Serial.print(",");
-    Serial.println(gyroscope[2]);
-    delay(100);
+    delay(200);
 }
