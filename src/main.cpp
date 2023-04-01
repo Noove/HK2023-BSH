@@ -13,22 +13,6 @@ void setup()
     LED::begin();
     Sensor::begin();
 
-    // LED::dimming(0, 10, 255);
-    // LED::dimming(1, 10, 192);
-    // LED::dimming(2, 10, 203);
-
-    // Matrix::set_pixel(2, 2, 255, 192, 203);
-
-    // for (uint8_t y = 0; y < 4; y++)
-    // {
-    //     for (uint8_t x = 0; x < 4; x++)
-    //     {
-    //         LED::set_pixel(x, y, 255, 192, 203);
-    //         delay(100);
-    //     }
-    // }
-
-
     for (uint8_t i = 0; i < 255; i++)
     {
         for (uint8_t y = 0; y < 4; y++)
