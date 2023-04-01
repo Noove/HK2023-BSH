@@ -1,7 +1,7 @@
 // Includes
 #include <Drivers/LED.h>
-#include <Drivers/Matrix.h> 
-#include <Drivers/Sensor.h> 
+#include <Drivers/Matrix.h>
+#include <Drivers/Sensor.h>
 
 void setup()
 {
@@ -17,20 +17,30 @@ void setup()
     // LED::dimming(1, 10, 192);
     // LED::dimming(2, 10, 203);
 
-// Matrix::set_pixel(2, 2, 255, 192, 203);
+    // Matrix::set_pixel(2, 2, 255, 192, 203);
 
-    for (uint8_t y = 0; y < 4; y++)
+    // for (uint8_t y = 0; y < 4; y++)
+    // {
+    //     for (uint8_t x = 0; x < 4; x++)
+    //     {
+    //         LED::set_pixel(x, y, 255, 192, 203);
+    //         delay(100);
+    //     }
+    // }
+
+
+    for (uint8_t i = 0; i < 255; i++)
     {
-        for (uint8_t x = 0; x < 4; x++) {
-            LED::set_pixel(x, y, 255, 192, 203);
-            LED::set_color(x, y, 255, 192, 203);
-            // LED::set_pixel(x, y, 255, 0, 0);
-            delay(800);
-            // LED::set_pixel(x, y, 0, 0, 0);
+        for (uint8_t y = 0; y < 4; y++)
+        {
+            for (uint8_t x = 0; x < 4; x++)
+            {
+                LED::set_pixel(x, y, i, 255 - i, 0);
+            }
         }
     }
 }
- 
+
 void loop()
 {
     // int8_t level[2];

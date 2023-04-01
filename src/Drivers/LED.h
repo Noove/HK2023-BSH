@@ -43,34 +43,28 @@ public:
     // Control analog and digital dimming
     static void set_pixel(uint8_t x, uint8_t y, uint8_t r, uint8_t g, uint8_t b)
     {
-        uint8_t index = y * 4 + 3 - x;
-        uint8_t color_pixel_index = index * 3;
+        // Calculate LED position in row
+        uint8_t led_index_in_row = (3 - x) * 3;
 
-        // Get LED driver address and channel
-        uint8_t addresses[] = {LED1202_DEV1_ADDR, LED1202_DEV2_ADDR, LED1202_DEV3_ADDR, LED1202_DEV4_ADDR};
-        uint8_t address = addresses[index / 4];
-
-        toggle_channel(address, pow(2, color_pixel_index % 12), r > 0);
-        toggle_channel(address, pow(2, (color_pixel_index + 1) % 12), g > 0);
-        toggle_channel(address, pow(2, (color_pixel_index + 2) % 12), b > 0); 
-    }
-
-    static void set_color(uint8_t x, uint8_t y, uint8_t r, uint8_t g, uint8_t b)
-    {
+        // Get LED driver address
         uint8_t addresses[] = {LED1202_DEV1_ADDR, LED1202_DEV2_ADDR, LED1202_DEV3_ADDR, LED1202_DEV4_ADDR};
         uint8_t address = addresses[y];
-        
-        uint8_t lr = 3 - x;
-        uint8_t clr = lr * 3;
-        Serial.print("led in row: ");
-        Serial.print(lr);
-        Serial.print("  color_led in row: ");
-        Serial.println(clr);
 
-        // Send PWM values to LED driver
-        write_reg(address, (uint8_t)(LED1202_PATTERN0_CS0_PWM + 0x01 + (clr * 2)), (uint8_t *)&r, 2); // Red channel
-        write_reg(address, (uint8_t)(LED1202_PATTERN0_CS0_PWM + 0x01 + ((clr + 1) * 2)), (uint8_t *)&g, 2); // Green channel
-        write_reg(address, (uint8_t)(LED1202_PATTERN0_CS0_PWM + 0x01 + ((clr + 2) * 2)), (uint8_t *)&b, 2); // Blue channel
+        // Enable correct LED channels
+        toggle_channel(address, pow(2, (led_index_in_row)), r > 0);  // Red channel
+        toggle_channel(address, pow(2, (led_index_in_row + 1)), g > 0);  // Green channel
+        toggle_channel(address, pow(2, (led_index_in_row + 2)), b > 0);  // Blue channel
+
+        // Lambda to set PWM level
+        auto set_pwm_level = [](uint8_t controller_address, uint8_t led_position, uint8_t level)
+        {   
+            write_reg(controller_address, (uint8_t)(LED1202_PATTERN0_CS0_PWM + 0x01 + led_position * 2), (uint8_t *)&level, 2);
+        };
+
+        // Set color with PWM
+        set_pwm_level(address, led_index_in_row, r);
+        set_pwm_level(address, led_index_in_row + 1, g);
+        set_pwm_level(address, led_index_in_row + 2, b);
     }
 
 private:
@@ -116,15 +110,10 @@ private:
         Wire.write(reg);
         Wire.endTransmission();
 
-        // Read data
+        // Read data from register
         Wire.requestFrom(addr, len);
         byte MSB = Wire.read();
         byte LSB = Wire.read();
-        // Serial.print(reg,HEX);
-        // Serial.print(":");
-        // Serial.print(MSB,BIN);
-        // Serial.print(",");
-        // Serial.println(LSB,BIN);
         return (LSB << 8) | MSB;
     }
 };
