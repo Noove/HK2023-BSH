@@ -1,3 +1,5 @@
+#pragma once
+
 // Includes
 #include <Drivers/Matrix.h>
 #include <Drivers/Sensor.h>

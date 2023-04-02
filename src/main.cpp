@@ -4,8 +4,6 @@
 #include <Drivers/Animation.h>
 #include <Drivers/Commander.h>
 
-bool gui_mode;
-
 void setup()
 {
     // Peripheal Init
@@ -25,5 +23,5 @@ void loop()
     serial_commands_.ReadSerial();
 
     // Animation handler
-    Animation::runAnimation();
+    if(!gui_mode) Animation::runAnimation();
 }
