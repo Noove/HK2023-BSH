@@ -47,6 +47,23 @@ void cmd_set_panel(SerialCommands* sender)
     Animation::setColor(r, g, b);
 }
 
+void cmd_set_pixel(SerialCommands* sender)
+{
+    char* x_str = sender->Next();
+    char* y_str = sender->Next();
+    char* r_str = sender->Next();
+    char* g_str = sender->Next();
+    char* b_str = sender->Next();
+
+    int x = atoi(x_str);
+    int y = atoi(y_str);
+    int r = atoi(r_str);
+    int g = atoi(g_str);
+    int b = atoi(b_str);
+
+    Matrix::set_pixel(x, y, r, g, b);
+}
+
 void cmd_set_brightness(SerialCommands* sender)
 {
     char* brt_str = sender->Next();
@@ -57,6 +74,7 @@ void cmd_set_brightness(SerialCommands* sender)
 
 // Command init
 SerialCommand cmd_set_panel_("SetPanel", cmd_set_panel);
+SerialCommand cmd_set_pixel_("SetPixel", cmd_set_pixel);
 SerialCommand cmd_gui_on_("EnableGUI", cmd_gui_on);
 SerialCommand cmd_gui_off_("DisableGUI", cmd_gui_off);
 SerialCommand cmd_set_brightness_("SetBrightness", cmd_set_brightness);
@@ -74,5 +92,6 @@ public:
         serial_commands_.AddCommand(&cmd_gui_off_);
         serial_commands_.AddCommand(&cmd_set_panel_);
         serial_commands_.AddCommand(&cmd_set_brightness_);
+        serial_commands_.AddCommand(&cmd_set_pixel_);
     }
 };
