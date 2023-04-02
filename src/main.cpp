@@ -30,9 +30,27 @@ void setup()
     // }
 
     setColor(0, 255, 0);
-    for (uint8_t x = 50; x > 0; x--) Matrix::set_brightness(x);
+    // for (uint8_t x = 50; x > 0; x--) Matrix::set_brightness(x);
+    long last_shake;
 
-    while(true){}
+
+    while(true){
+        int8_t levels[2];
+        Sensor::get_level(levels);
+
+
+        Matrix::set_brightness(30);
+
+        if(Sensor::get_all() > 1250 && last_shake + 1250 < millis())
+        {
+            Matrix::toggle_subpixel(LED1202_GLOBAL_ADDR, (uint16_t)0x0FFFU, false);
+            delay(1000);
+            while(Sensor::get_all() < 2000) {}
+            last_shake = millis();
+        }
+
+        setColor(0, 255, 0);
+    }
 
 }
 int canvas[4][4][3] = {

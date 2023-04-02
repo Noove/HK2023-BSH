@@ -54,6 +54,8 @@ public:
     static void set_brightness(uint8_t new_brightness)
     {
         // Calculate brighness change
+        if(new_brightness > 100) new_brightness = 100;
+        if(new_brightness < 0) new_brightness = 0;
         float brightness_change = (float)new_brightness / (float)brightness;
 
         if(brightness_change != 1)
@@ -74,13 +76,38 @@ public:
 
                     // Write pixel with updated brightness
                     uint16_t new_level = level_read * brightness_change;
-                    Serial.println(new_level);
+                    // Serial.println(new_level);
                     write_reg(address, subpixel_register, (uint8_t *)&new_level, 2); 
                 }
 
                 // Update brightness state
                 brightness = new_brightness;
             }
+        }
+    }
+
+    static uint8_t get_brightness()
+    {
+        return brightness;
+    }
+
+    // Enable/disable LED channel
+    static void toggle_subpixel(uint8_t address, uint16_t channel, bool enable)
+    {
+        // Read current status
+        uint16_t readReg, chRegVal;
+        readReg = read_reg(address, LED1202_LED_CH_ENABLE);
+
+        // Write LED enable register
+        if (enable)
+        {
+            chRegVal = readReg | channel;
+            write_reg(address, LED1202_LED_CH_ENABLE, (uint8_t *)&chRegVal, 2);
+        }
+        else
+        {
+            chRegVal = readReg & (~channel);
+            write_reg(address, LED1202_LED_CH_ENABLE, (uint8_t *)&chRegVal, 2);
         }
     }
 
@@ -102,26 +129,6 @@ private:
         write_reg(address, (uint8_t)(LED1202_PATTERN0_CS0_PWM + index * 2), (uint8_t *)&r_level, 2);
         write_reg(address, (uint8_t)(LED1202_PATTERN0_CS0_PWM + (index + 1) * 2), (uint8_t *)&g_level, 2);
         write_reg(address, (uint8_t)(LED1202_PATTERN0_CS0_PWM + (index + 2) * 2), (uint8_t *)&b_level, 2);
-    }
-
-    // Enable/disable LED channel
-    static void toggle_subpixel(uint8_t address, uint16_t channel, bool enable)
-    {
-        // Read current status
-        uint16_t readReg, chRegVal;
-        readReg = read_reg(address, LED1202_LED_CH_ENABLE);
-
-        // Write LED enable register
-        if (enable)
-        {
-            chRegVal = readReg | channel;
-            write_reg(address, LED1202_LED_CH_ENABLE, (uint8_t *)&chRegVal, 2);
-        }
-        else
-        {
-            chRegVal = readReg & (~channel);
-            write_reg(address, LED1202_LED_CH_ENABLE, (uint8_t *)&chRegVal, 2);
-        }
     }
 
     // Writes register to I2C
