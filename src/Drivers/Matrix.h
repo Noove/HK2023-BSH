@@ -83,14 +83,15 @@ private:
         toggle_subpixel(address, pow(2, index + 1), green > 0);  // Green channel
         toggle_subpixel(address, pow(2, index + 2), blue > 0);   // Blue channel
 
-        uint8_t r_level[2] = { red & 0x00FF, (red & 0xFF00) >> 4 };
-        uint8_t g_level[2] = { red >> 8, red & 0xFF };
-        uint8_t b_level[2] = { red >> 8, red & 0xFF };
+        // Calculate 12 bit pwm levels
+        uint16_t r_level = ((uint8_t *)&red)[1] | ((uint8_t *)&red)[0] << 4;
+        uint16_t g_level = ((uint8_t *)&green)[1] | ((uint8_t *)&green)[0] << 4;
+        uint16_t b_level = ((uint8_t *)&blue)[1] | ((uint8_t *)&blue)[0] << 4;
 
         // Set color with PWM
-        write_reg(address, (uint8_t)(LED1202_PATTERN0_CS0_PWM + index * 2), (uint8_t *)&red, 2);
-        write_reg(address, (uint8_t)(LED1202_PATTERN0_CS0_PWM + (index + 1) * 2), (uint8_t *)&green, 2);
-        write_reg(address, (uint8_t)(LED1202_PATTERN0_CS0_PWM + (index + 2) * 2), (uint8_t *)&blue, 2);
+        write_reg(address, (uint8_t)(LED1202_PATTERN0_CS0_PWM + index * 2), (uint8_t *)&r_level, 2);
+        write_reg(address, (uint8_t)(LED1202_PATTERN0_CS0_PWM + (index + 1) * 2), (uint8_t *)&g_level, 2);
+        write_reg(address, (uint8_t)(LED1202_PATTERN0_CS0_PWM + (index + 2) * 2), (uint8_t *)&b_level, 2);
     }
 
     // Enable/disable LED channel
