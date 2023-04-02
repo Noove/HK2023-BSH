@@ -76,17 +76,21 @@ public:
 
 private:
     // Control LED power and PWM dimming
-    static void set_subpixel(uint8_t address, uint8_t index, uint8_t red, uint8_t green, uint8_t blue)
+    static void set_subpixel(uint8_t address, uint8_t index, uint16_t red, uint16_t green, uint16_t blue)
     {
         // Enable correct LED channels
         toggle_subpixel(address, pow(2, index), red > 0);        // Red channel
         toggle_subpixel(address, pow(2, index + 1), green > 0);  // Green channel
         toggle_subpixel(address, pow(2, index + 2), blue > 0);   // Blue channel
 
+        uint8_t r_level[2] = { red & 0x00FF, (red & 0xFF00) >> 4 };
+        uint8_t g_level[2] = { red >> 8, red & 0xFF };
+        uint8_t b_level[2] = { red >> 8, red & 0xFF };
+
         // Set color with PWM
-        write_reg(address, (uint8_t)(LED1202_PATTERN0_CS0_PWM + 0x01 + index * 2), (uint8_t *)&red, 2);
-        write_reg(address, (uint8_t)(LED1202_PATTERN0_CS0_PWM + 0x01 + (index + 1) * 2), (uint8_t *)&green, 2);
-        write_reg(address, (uint8_t)(LED1202_PATTERN0_CS0_PWM + 0x01 + (index + 2) * 2), (uint8_t *)&blue, 2);
+        write_reg(address, (uint8_t)(LED1202_PATTERN0_CS0_PWM + index * 2), (uint8_t *)&red, 2);
+        write_reg(address, (uint8_t)(LED1202_PATTERN0_CS0_PWM + (index + 1) * 2), (uint8_t *)&green, 2);
+        write_reg(address, (uint8_t)(LED1202_PATTERN0_CS0_PWM + (index + 2) * 2), (uint8_t *)&blue, 2);
     }
 
     // Enable/disable LED channel
