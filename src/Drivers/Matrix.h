@@ -47,8 +47,11 @@ public:
         uint8_t addresses[] = {LED1202_DEV1_ADDR, LED1202_DEV2_ADDR, LED1202_DEV3_ADDR, LED1202_DEV4_ADDR};
         uint8_t address = addresses[y];
 
+        // Calculate brightness coefficient
+        float brightness_c = brightness / 100.0;
+
         // Set subpixel color and power
-        set_subpixel(address, led_index, r, g, b);
+        set_subpixel(address, led_index, r * brightness_c, g * brightness_c, b * brightness_c);
     }
 
     static void set_brightness(uint8_t new_brightness)
