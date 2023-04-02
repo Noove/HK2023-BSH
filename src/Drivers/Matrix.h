@@ -32,8 +32,8 @@ public:
     // Initialize LED Driver
     static void begin()
     {
-        uint8_t in = 0x01;
-        write_reg(LED1202_GLOBAL_ADDR, LED1202_DEVICE_ENABLE, &in, 1);
+        uint8_t init = 0x01;
+        write_reg(LED1202_GLOBAL_ADDR, LED1202_DEVICE_ENABLE, &init, 1);
         toggle_subpixel(LED1202_GLOBAL_ADDR, (uint16_t)0x0FFFU, false);
     }
 
@@ -49,6 +49,29 @@ public:
 
         // Set subpixel color and power
         set_subpixel(address, led_index, r, g, b);
+    }
+
+    static void set_brightness(uint8_t brightness)
+    {
+        // Cycle through drivers
+        for(int driver = 0; driver < 4; driver++)
+        {
+            // Cycle through subpixels
+            for(int index = 0; index < 12; index++)
+            {
+                // Get LED driver address
+                uint8_t addresses[] = {LED1202_DEV1_ADDR, LED1202_DEV2_ADDR, LED1202_DEV3_ADDR, LED1202_DEV4_ADDR};
+                uint8_t address = addresses[driver];
+
+                // Read pixels states
+                uint8_t subpixel_register = (uint8_t)(LED1202_PATTERN0_CS0_PWM + 0x01 + index * 2);
+                uint16_t level = read_reg(address, subpixel_register);
+                level *= brightness / 100.0;
+
+                // Write pixel with halfed brightness
+                write_reg(address, subpixel_register, (uint8_t *)&level, 2); 
+            }
+        }
     }
 
 private:
@@ -71,7 +94,7 @@ private:
     {
         // Read current status
         uint16_t readReg, chRegVal;
-        readReg = read_reg(address, LED1202_LED_CH_ENABLE, 2);
+        readReg = read_reg(address, LED1202_LED_CH_ENABLE);
 
         // Write LED enable register
         if (enable)
@@ -101,7 +124,7 @@ private:
     }
 
     // Reads register from I2C
-    static uint16_t read_reg(uint8_t addr, uint8_t reg, int len)
+    static uint16_t read_reg(uint8_t addr, uint8_t reg)
     {
         // Request data from register
         Wire.beginTransmission(addr);
@@ -109,7 +132,7 @@ private:
         Wire.endTransmission();
 
         // Read data from register
-        Wire.requestFrom(addr, len);
+        Wire.requestFrom(addr, 2);
         byte MSB = Wire.read();
         byte LSB = Wire.read();
         return (LSB << 8) | MSB;
