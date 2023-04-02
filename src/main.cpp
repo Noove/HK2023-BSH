@@ -43,15 +43,13 @@ void clearCanvas() {
 }
 
 void drawCanvas(int input[4][4][3]) {
+    Sensor::detect_shake();
     for (int x = 0; x < 4; x++) {
         for (int y = 0; y < 4; y++) {
             Matrix::set_pixel(y, x, input[x][y][0], input[x][y][1], input[x][y][2]);
         }
     }
 }
-
-
-long last_shake;
 
 int clear_row[4][3]  = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
 
@@ -107,15 +105,6 @@ void loop()
             drawCanvas(canvas);
             delay(100);
         }
-
-        Serial.println(Sensor::get_all());
-
-        if(Sensor::get_all() > 1250 && last_shake + 1250 < millis())
-        {
-            Matrix::toggle_subpixel(LED1202_GLOBAL_ADDR, (uint16_t)0x0FFFU, false);
-            delay(1000);
-            while(Sensor::get_all() < 2000) {}
-            last_shake = millis();
-        }
+        Sensor::detect_shake();
     }
 }
