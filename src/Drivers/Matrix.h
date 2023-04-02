@@ -54,7 +54,7 @@ public:
         set_subpixel(address, led_index, r * brightness_c, g * brightness_c, b * brightness_c);
     }
 
-    static void set_brightness(uint8_t new_brightness)
+    static void set_brightness(int8_t new_brightness)
     {
         // Calculate brighness change
         if(new_brightness > 100) new_brightness = 100;
@@ -79,6 +79,7 @@ public:
 
                     // Write pixel with updated brightness
                     uint16_t new_level = level_read * brightness_change;
+
                     // Serial.println(new_level);
                     write_reg(address, subpixel_register, (uint8_t *)&new_level, 2); 
                 }
@@ -129,9 +130,9 @@ private:
         uint16_t b_level = ((uint8_t *)&blue)[1] | ((uint8_t *)&blue)[0] << 4;
 
         // Set color with PWM
-        write_reg(address, (uint8_t)(LED1202_PATTERN0_CS0_PWM + index * 2), (uint8_t *)&r_level, 2);
-        write_reg(address, (uint8_t)(LED1202_PATTERN0_CS0_PWM + (index + 1) * 2), (uint8_t *)&g_level, 2);
-        write_reg(address, (uint8_t)(LED1202_PATTERN0_CS0_PWM + (index + 2) * 2), (uint8_t *)&b_level, 2);
+        write_reg(address, (uint8_t)(LED1202_PATTERN0_CS0_PWM + index * 2), (uint8_t *)&red, 2);
+        write_reg(address, (uint8_t)(LED1202_PATTERN0_CS0_PWM + (index + 1) * 2), (uint8_t *)&green, 2);
+        write_reg(address, (uint8_t)(LED1202_PATTERN0_CS0_PWM + (index + 2) * 2), (uint8_t *)&blue, 2);
     }
 
     // Writes register to I2C

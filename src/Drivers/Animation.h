@@ -69,14 +69,14 @@ public:
             }
             else if (abs(level[0]) < abs(level[1]) && level[1] > 0) // left
             {
-                dx++;
-                delay(2000 / abs(level[1]));
+                Matrix::set_brightness(Matrix::get_brightness() - 5);
             }
             else if (abs(level[0]) < abs(level[1]) && level[1] < 0) // right
             {
-                dx--;
-                delay(2000 / abs(level[1]));
+                Matrix::set_brightness(Matrix::get_brightness() + 5);
             }
+
+            Serial.println(Matrix::get_brightness());
         }
 
         Sensor::detect_shake();  
