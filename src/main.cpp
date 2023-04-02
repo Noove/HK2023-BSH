@@ -2,41 +2,28 @@
 #include <Drivers/Matrix.h>
 #include <Drivers/Sensor.h>
 #include <Drivers/Animation.h>
-// #include <CommandHandler.h>
-
-// CommandHandler SerialCommandHandler;
-
-void GUI()
-{
-    Serial.println("Hello world");
-}
+#include <Drivers/Commander.h>
 
 bool gui_mode;
 
 void setup()
 {
+    // Peripheal Init
     Serial.begin(115200);
-
-    // Devices
     Wire.begin();
+
+    // Subsystem Init
     Matrix::begin();
     Sensor::begin();
     Matrix::set_brightness(20);
-
-    // SerialCommandHandler.addCommand ("GUI", GUI);
+    Commander::begin();
 }
 
 void loop()
 {
-    // SerialCommandHandler.processSerial(Serial);
+    // Process commands
+    serial_commands_.ReadSerial();
 
-    if(gui_mode)
-    {
-        Serial.println("Hello world");
-    }
-    else
-    {
-    }
-    Animation::runAnimation("right");
-
+    // Animation handler
+    Animation::runAnimation();
 }

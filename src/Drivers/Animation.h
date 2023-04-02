@@ -36,7 +36,7 @@ public:
         }
     }
 
-    static void runAnimation(String direction)
+    static void runAnimation()
     {
         for(int y = 0; y < 4; y++) {
             for(int x = 0; x < 4; x++) {
