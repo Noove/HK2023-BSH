@@ -66,7 +66,7 @@ public:
                 // Read pixels states
                 uint8_t subpixel_register = (uint8_t)(LED1202_PATTERN0_CS0_PWM + 0x01 + index * 2);
                 uint16_t level = read_reg(address, subpixel_register);
-                level *= brightness / 100.0;
+                level == level * (brightness / 100.0);
 
                 // Write pixel with halfed brightness
                 write_reg(address, subpixel_register, (uint8_t *)&level, 2); 

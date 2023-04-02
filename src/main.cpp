@@ -12,35 +12,6 @@ void setColor(int red, int green, int blue)
     {
         for(int y = 0; y < 4; y++) Matrix::set_pixel(x, y, red, green, blue);
     }
-
-    // Serial.print("r: ");
-    // Serial.print(red);
-    // Serial.print(" | g: ");
-    // Serial.print(green);
-    // Serial.print(" | b: ");
-    // Serial.println(blue);
-    // delay(1);
-
-    // while (r != red || g != green || b != blue)
-    // {
-    //     if (r < red)
-    //         r += 1;
-    //     if (r > red)
-    //         r -= 1;
-
-    //     if (g < green)
-    //         g += 1;
-    //     if (g > green)
-    //         g -= 1;
-
-    //     if (b < blue)
-    //         b += 1;
-    //     if (b > blue)
-    //         b -= 1;
-
-    //     Matrix::set_pixel(0, 0, r, g, b);
-    //     delay(100);
-    // }
 }
 
 void setup()
@@ -65,12 +36,12 @@ void setup()
     //     delay(500);
     // }
     
-    // while(true){}
 
-    // Matrix::set_brightness(5);
-    setColor(255, 0, 0);
+    // setColor(255, 0, 0);
     
+    // Matrix::set_brightness(10);
     
+    // while(true){}
 
 }
 int canvas[4][4][3] = {
@@ -98,20 +69,17 @@ void drawCanvas(int input[4][4][3]) {
     }
 }
 
-int letterB[4][4][3] = {
-    {{0, 0, 255}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}},
-    {{0, 0, 255}, {0, 0, 255}, {0, 0, 255}, {0, 0, 0}},
-    {{0, 0, 255}, {0, 0, 0}, {0, 0, 255}, {0, 0, 0}},
-    {{0, 0, 255}, {0, 0, 255}, {0, 0, 255}, {0, 0, 0}}
-};
+
+
+int clear_row[4][3]  = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
 
 void loop()
 {
     // make a rainbow sequence
 
-    for(int i = 0; i < 255; i++) setColor(255 - i, 0, i);
-    for(int r = 0; r < 255; r++) setColor(0, r, 255 - r);     
-    for(int r = 0; r < 255; r++) setColor(r, 255 -r, 0);
+    // for(int i = 0; i < 255; i++) setColor(255 - i, 0, i);
+    // for(int r = 0; r < 255; r++) setColor(0, r, 255 - r);     
+    // for(int r = 0; r < 255; r++) setColor(r, 255 -r, 0);
     
     // int8_t level[2];
     // Sensor::get_level(level);
@@ -120,32 +88,53 @@ void loop()
     // Serial.println(level[0]);
     // delay(100);
 
-    // clearCanvas();
-    // for(int i = 0; i < 4; i++) {
-    //     memcpy(canvas[i], letterB[3-i], sizeof(canvas[0]));
-    //     drawCanvas(canvas);
-    //     delay(1000);
-    // }
-    
-    
-    
-
-
-    // letter "B"
-    // for(int y = 0; y < 4; y++) {
-    //     Matrix::set_pixel(0, y, 0, 0, 255);
-    //     Matrix::set_pixel(1, y-, 0, 0, 255);
-    //     Matrix::set_pixel(2, y, 0, 0, 255);
-    //     delay(500);    
-    // };
-    // for(int y = 0; y < 4; y++) {
-        
-    //     delay(500);    
-    // };
-    // for(int y = 0; y < 4; y++) {
-        
-    //     delay(500);    
-    // };
+    // LETTERS
+    for (int lett = 0; lett < 3; lett++) {
+        int letters[3][4][4][3] = {
+            {
+            {{0, 0, 255}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}},
+            {{0, 0, 255}, {0, 0, 255}, {0, 0, 255}, {0, 0, 0}},
+            {{0, 0, 255}, {0, 0, 0}, {0, 0, 255}, {0, 0, 0}},
+            {{0, 0, 255}, {0, 0, 255}, {0, 0, 255}, {0, 0, 0}}
+            },
+            {
+            {{0, 0, 255}, {0, 0, 255}, {0, 0, 255}, {0, 0, 0}},
+            {{0, 0, 255}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}},
+            {{0, 0, 0}, {0, 0, 255}, {0, 0, 255}, {0, 0, 0}},
+            {{0, 0, 255}, {0, 0, 255}, {0, 0, 255}, {0, 0, 0}}
+            },
+            {
+            {{0, 0, 255}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}},
+            {{0, 0, 255}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}},
+            {{0, 0, 255}, {0, 0, 255}, {0, 0, 255}, {0, 0, 0}},
+            {{0, 0, 255}, {0, 0, 0}, {0, 0, 255}, {0, 0, 0}}
+            }
+        };
+        for (int x = 0; x < 4; x++) {
+            if(x == 1) {
+                memcpy(canvas[1], canvas[0], sizeof(canvas[0]));
+            } else if(x == 2) {
+                memcpy(canvas[2], canvas[1], sizeof(canvas[0]));
+                memcpy(canvas[1], canvas[0], sizeof(canvas[0]));
+            } else if(x == 3) {
+                memcpy(canvas[3], canvas[2], sizeof(canvas[0]));
+                memcpy(canvas[2], canvas[1], sizeof(canvas[0]));
+                memcpy(canvas[1], canvas[0], sizeof(canvas[0]));
+            }
+            memcpy(canvas[0], letters[lett][3-x], sizeof(canvas[0]));
+            drawCanvas(canvas);
+            delay(100);
+        }
+        for (int x = 0; x < 4; x++) {
+            memcpy(canvas[3], canvas[2], sizeof(canvas[0]));
+            memcpy(canvas[2], canvas[1], sizeof(canvas[0]));
+            memcpy(canvas[1], canvas[0], sizeof(canvas[0]));
+            memcpy(canvas[0], clear_row, sizeof(canvas[0]));
+            drawCanvas(canvas);
+            delay(100);
+        }
+        delay(500);
+    }
     
     // setColor(255, 0, 255);
     // setColor(0, 0, 255);
