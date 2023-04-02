@@ -34,7 +34,7 @@ void cmd_gui_off(SerialCommands* sender)
     gui_mode = false;
 }
 
-void cmd_set_matrix(SerialCommands* sender)
+void cmd_set_panel(SerialCommands* sender)
 {
     char* r_str = sender->Next();
     char* g_str = sender->Next();
@@ -47,10 +47,19 @@ void cmd_set_matrix(SerialCommands* sender)
     Animation::setColor(r, g, b);
 }
 
+void cmd_set_brightness(SerialCommands* sender)
+{
+    char* brt_str = sender->Next();
+    int brightness = atoi(brt_str);
+
+    Matrix::set_brightness(brightness);
+}
+
 // Command init
-SerialCommand cmd_set_matrix_("SetMatrix", cmd_set_matrix);
+SerialCommand cmd_set_panel_("SetPanel", cmd_set_panel);
 SerialCommand cmd_gui_on_("EnableGUI", cmd_gui_on);
 SerialCommand cmd_gui_off_("DisableGUI", cmd_gui_off);
+SerialCommand cmd_set_brightness_("SetBrightness", cmd_set_brightness);
 
 /* -------------------------------------------------------------------------- */
 /*                               Commander Class                              */
@@ -63,6 +72,7 @@ public:
         serial_commands_.SetDefaultHandler(cmd_unrecognized);
         serial_commands_.AddCommand(&cmd_gui_on_);
         serial_commands_.AddCommand(&cmd_gui_off_);
-        serial_commands_.AddCommand(&cmd_set_matrix_);
+        serial_commands_.AddCommand(&cmd_set_panel_);
+        serial_commands_.AddCommand(&cmd_set_brightness_);
     }
 };
