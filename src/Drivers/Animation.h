@@ -27,9 +27,6 @@ int dx = 0, dy = 0;
 
 class Animation {
 public:
-    
-   
-    
     // Paints whole canvas in one color
     static void setColor(int red, int green, int blue)
     {
@@ -41,53 +38,46 @@ public:
 
     static void runAnimation(String direction)
     {
-    for(int y = 0; y < 4; y++) {
-        for(int x = 0; x < 4; x++) {
-            if(s[mod(y + dy, 15) * 15 + mod(x + dx, 15)] == '0')
+        for(int y = 0; y < 4; y++) {
+            for(int x = 0; x < 4; x++) {
+                if(s[mod(y + dy, 15) * 15 + mod(x + dx, 15)] == '0')
+                {
+                    Matrix::set_pixel(x, y, 255, 0, 0);
+                }
+                else {
+                    Matrix::set_pixel(x, y, 0, 255, 255);
+                }
+            }
+        }
+
+        int8_t level[2];
+        Sensor::get_level(level);
+
+        if(abs(level[0]) > 10 || abs(level[1]) > 10)
+        {
+            if (abs(level[0]) > abs(level[1]) && level[0] > 0) // up
             {
-                Matrix::set_pixel(x, y, 255, 0, 0);
+                dy++;
+                delay(2000 / abs(level[0]));
             }
-            else {
-                Matrix::set_pixel(x, y, 0, 255, 255);
+            else if (abs(level[0]) > abs(level[1]) && level[0] < 0) // down
+            {
+                dy--;
+                delay(2000 / abs(level[0]));
+            }
+            else if (abs(level[0]) < abs(level[1]) && level[1] > 0) // left
+            {
+                dx++;
+                delay(2000 / abs(level[1]));
+            }
+            else if (abs(level[0]) < abs(level[1]) && level[1] < 0) // right
+            {
+                dx--;
+                delay(2000 / abs(level[1]));
             }
         }
-    }
 
-    int8_t level[2];
-    Sensor::get_level(level);
-
-     Serial.print(level[0]);
-    Serial.print(",");
-    Serial.println(level[1]);
-
-    if(abs(level[0]) > 10 || abs(level[1]) > 10)
-    {
-        if (abs(level[0]) > abs(level[1]) && level[0] > 0) // up
-        {
-            dy++;
-            delay(2000 / abs(level[0]));
-        }
-        else if (abs(level[0]) > abs(level[1]) && level[0] < 0) // down
-        {
-            Serial.println("down");
-            dy--;
-            delay(2000 / abs(level[0]));
-        }
-        else if (abs(level[0]) < abs(level[1]) && level[1] > 0) // left
-        {
-            Serial.println("left");
-            dx++;
-            delay(2000 / abs(level[1]));
-        }
-        else if (abs(level[0]) < abs(level[1]) && level[1] < 0) // right
-        {
-            Serial.println("right");
-            dx--;
-            delay(2000 / abs(level[1]));
-        }
-    }
-
-        
+        Sensor::detect_shake();  
     }
 
 private:

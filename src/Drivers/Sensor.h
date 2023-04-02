@@ -25,10 +25,10 @@ public:
 
     static void detect_shake()
     {
-        if(get_all() > 1250 && last_shake + 1250 < millis())
+        if(get_all() > 1500 && last_shake + 1500 < millis())
         {
             Matrix::toggle_subpixel(LED1202_GLOBAL_ADDR, (uint16_t)0x0FFFU, false);
-            delay(1000);
+            delay(2000);
             while(Sensor::get_all() < 2000) {}
             last_shake = millis();
         }
