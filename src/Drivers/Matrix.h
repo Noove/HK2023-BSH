@@ -51,25 +51,35 @@ public:
         set_subpixel(address, led_index, r, g, b);
     }
 
-    static void set_brightness(uint8_t brightness)
+    static void set_brightness(uint8_t new_brightness)
     {
-        // Cycle through drivers
-        for(int driver = 0; driver < 4; driver++)
+        // Calculate brighness change
+        float brightness_change = (float)new_brightness / (float)brightness;
+
+        if(brightness_change != 1)
         {
-            // Cycle through subpixels
-            for(int index = 0; index < 12; index++)
+            // Cycle through drivers
+            for(int driver = 0; driver < 4; driver++)
             {
-                // Get LED driver address
-                uint8_t addresses[] = {LED1202_DEV1_ADDR, LED1202_DEV2_ADDR, LED1202_DEV3_ADDR, LED1202_DEV4_ADDR};
-                uint8_t address = addresses[driver];
+                // Cycle through subpixels
+                for(int index = 0; index < 12; index++)
+                {
+                    // Get LED driver address
+                    uint8_t addresses[] = {LED1202_DEV1_ADDR, LED1202_DEV2_ADDR, LED1202_DEV3_ADDR, LED1202_DEV4_ADDR};
+                    uint8_t address = addresses[driver];
 
-                // Read pixels states
-                uint8_t subpixel_register = (uint8_t)(LED1202_PATTERN0_CS0_PWM + 0x01 + index * 2);
-                uint16_t level = read_reg(address, subpixel_register);
-                level == level * (brightness / 100.0);
+                    // Read pixels states
+                    uint8_t subpixel_register = (uint8_t)(LED1202_PATTERN0_CS0_PWM + index * 2);
+                    uint16_t level_read = read_reg(address, subpixel_register);
 
-                // Write pixel with halfed brightness
-                write_reg(address, subpixel_register, (uint8_t *)&level, 2); 
+                    // Write pixel with updated brightness
+                    uint16_t new_level = level_read * brightness_change;
+                    Serial.println(new_level);
+                    write_reg(address, subpixel_register, (uint8_t *)&new_level, 2); 
+                }
+
+                // Update brightness state
+                brightness = new_brightness;
             }
         }
     }
@@ -142,4 +152,10 @@ private:
         byte LSB = Wire.read();
         return (LSB << 8) | MSB;
     }
+
+    // Brightness variable
+    static uint8_t brightness;
 };
+
+// Initialize brightness value
+uint8_t Matrix::brightness = 100;

@@ -28,20 +28,11 @@ void setup()
     //     for (uint8_t y = 0; y < 4; y++)
     //         Matrix::set_pixel(x, y, 255, 192, 203);
     // }
-    
-    // for (uint8_t x = 100; x > 0; x -= 25)
-    // {
-    //     Serial.println(x);
-    //     Matrix::set_brightness(x);
-    //     delay(500);
-    // }
-    
 
-    // setColor(255, 0, 0);
-    
-    // Matrix::set_brightness(10);
-    
-    // while(true){}
+    setColor(0, 255, 0);
+    for (uint8_t x = 50; x > 0; x--) Matrix::set_brightness(x);
+
+    while(true){}
 
 }
 int canvas[4][4][3] = {
@@ -105,8 +96,8 @@ void loop()
             },
             {
             {{0, 0, 255}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}},
-            {{0, 0, 255}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}},
             {{0, 0, 255}, {0, 0, 255}, {0, 0, 255}, {0, 0, 0}},
+            {{0, 0, 255}, {0, 0, 0}, {0, 0, 255}, {0, 0, 0}},
             {{0, 0, 255}, {0, 0, 0}, {0, 0, 255}, {0, 0, 0}}
             }
         };
