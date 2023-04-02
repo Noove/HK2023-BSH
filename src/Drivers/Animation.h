@@ -2,11 +2,34 @@
 #include <Drivers/Matrix.h>
 #include <Drivers/Sensor.h>
 
-// Empty canvas instance
-int clear_row[4][3]  = {{0, 100, 100}, {0, 100, 100}, {0, 100, 100}, {0, 100, 100}};
+String s= 
+    "0    000  0    "
+    "000  0    000  "
+    "0 0   00  0 0  "
+    "000  000  0 0  "
+    "               "
+    "000  0    0    "
+    "0    000  000  "
+    " 00  0 0  0 0  "
+    "000  0 0  000  "
+    "               "
+    "0    0    000  "
+    "000  000  0    "
+    "0 0  0 0   00  "
+    "0 0  000  000  "
+    "               ";
+
+int mod(int n, int m) {
+    return (n % m + m) % m;
+}
+
+int dx = 0, dy = 0;
 
 class Animation {
 public:
+    
+   
+    
     // Paints whole canvas in one color
     static void setColor(int red, int green, int blue)
     {
@@ -16,54 +39,55 @@ public:
         }
     }
 
-    static void runAnimation()
+    static void runAnimation(String direction)
     {
-        for (int lett = 0; lett < 3; lett++) {
-            int letters[3][4][4][3] = {
-                {
-                {{255, 0, 0}, {0, 100, 100}, {0, 100, 100}, {0, 100, 100}},
-                {{255, 0, 0}, {255, 0, 0}, {255, 0, 0}, {0, 100, 100}},
-                {{255, 0, 0}, {0, 100, 100}, {255, 0, 0}, {0, 100, 100}},
-                {{255, 0, 0}, {255, 0, 0}, {255, 0, 0}, {0, 100, 100}}
-                },
-                {
-                {{255, 0, 0}, {255, 0, 0}, {255, 0, 0}, {0, 100, 100}},
-                {{255, 0, 0}, {0, 100, 100}, {0, 100, 100}, {0, 100, 100}},
-                {{0, 100, 100}, {255, 0, 0}, {255, 0, 0}, {0, 100, 100}},
-                {{255, 0, 0}, {255, 0, 0}, {255, 0, 0}, {0, 100, 100}}
-                },
-                {
-                {{255, 0, 0}, {0, 100, 100}, {0, 100, 100}, {0, 100, 100}},
-                {{255, 0, 0}, {255, 0, 0}, {255, 0, 0}, {0, 100, 100}},
-                {{255, 0, 0}, {0, 100, 100}, {255, 0, 0}, {0, 100, 100}},
-                {{255, 0, 0}, {0, 100, 100}, {255, 0, 0}, {0, 100, 100}}
-                }
-            };
-            for (int x = 0; x < 4; x++) {
-                if(x == 1) {
-                    memcpy(canvas[1], canvas[0], sizeof(canvas[0]));
-                } else if(x == 2) {
-                    memcpy(canvas[2], canvas[1], sizeof(canvas[0]));
-                    memcpy(canvas[1], canvas[0], sizeof(canvas[0]));
-                } else if(x == 3) {
-                    memcpy(canvas[3], canvas[2], sizeof(canvas[0]));
-                    memcpy(canvas[2], canvas[1], sizeof(canvas[0]));
-                    memcpy(canvas[1], canvas[0], sizeof(canvas[0]));
-                }
-                memcpy(canvas[0], letters[lett][3-x], sizeof(canvas[0]));
-                drawCanvas(canvas);
-                delay(200);
+    for(int y = 0; y < 4; y++) {
+        for(int x = 0; x < 4; x++) {
+            if(s[mod(y + dy, 15) * 15 + mod(x + dx, 15)] == '0')
+            {
+                Matrix::set_pixel(x, y, 255, 0, 0);
             }
-            for (int x = 0; x < 4; x++) {
-                memcpy(canvas[3], canvas[2], sizeof(canvas[0]));
-                memcpy(canvas[2], canvas[1], sizeof(canvas[0]));
-                memcpy(canvas[1], canvas[0], sizeof(canvas[0]));
-                memcpy(canvas[0], clear_row, sizeof(canvas[0]));
-                drawCanvas(canvas);
-                delay(200);
+            else {
+                Matrix::set_pixel(x, y, 0, 255, 255);
             }
-            Sensor::detect_shake();
         }
+    }
+
+    int8_t level[2];
+    Sensor::get_level(level);
+
+     Serial.print(level[0]);
+    Serial.print(",");
+    Serial.println(level[1]);
+
+    if(abs(level[0]) > 10 || abs(level[1]) > 10)
+    {
+        if (abs(level[0]) > abs(level[1]) && level[0] > 0) // up
+        {
+            dy++;
+            delay(2000 / abs(level[0]));
+        }
+        else if (abs(level[0]) > abs(level[1]) && level[0] < 0) // down
+        {
+            Serial.println("down");
+            dy--;
+            delay(2000 / abs(level[0]));
+        }
+        else if (abs(level[0]) < abs(level[1]) && level[1] > 0) // left
+        {
+            Serial.println("left");
+            dx++;
+            delay(2000 / abs(level[1]));
+        }
+        else if (abs(level[0]) < abs(level[1]) && level[1] < 0) // right
+        {
+            Serial.println("right");
+            dx--;
+            delay(2000 / abs(level[1]));
+        }
+    }
+
+        
     }
 
 private:
@@ -71,31 +95,31 @@ private:
     static int canvas[4][4][3];
 
     // Draws on canvas from array
-    static void drawCanvas(int input[4][4][3]) {
-        Sensor::detect_shake();
-        for (int x = 0; x < 4; x++) {
-            for (int y = 0; y < 4; y++) {
-                Matrix::set_pixel(y, x, input[x][y][0], input[x][y][1], input[x][y][2]);
-            }
-        }
-    }
+    // static void drawCanvas(int input[4][4][3]) {
+    //     Sensor::detect_shake();
+    //     for (int x = 0; x < 4; x++) {
+    //         for (int y = 0; y < 4; y++) {
+    //             Matrix::set_pixel(y, x, input[x][y][0], input[x][y][1], input[x][y][2]);
+    //         }
+    //     }
+    // }
 
     // Erases canvas content
-    static void clearCanvas() {
-        for (int x = 0; x < 4; x++) {
-            for (int y = 0; y < 4; y++) {
-                canvas[x][y][0] = 0;
-                canvas[x][y][1] = 0;
-                canvas[x][y][2] = 0;
-            }
-        }
-    }
+    // static void clearCanvas() {
+    //     for (int x = 0; x < 4; x++) {
+    //         for (int y = 0; y < 4; y++) {
+    //             canvas[x][y][0] = 0;
+    //             canvas[x][y][1] = 0;
+    //             canvas[x][y][2] = 0;
+    //         }
+    //     }
+    // }
 };
 
 // Initialize canvas
-int Animation::canvas[4][4][3] = {
-    {{0, 100, 100}, {0, 100, 100}, {0, 100, 100}, {0, 100, 100}},
-    {{0, 100, 100}, {0, 100, 100}, {0, 100, 100}, {0, 100, 100}},
-    {{0, 100, 100}, {0, 100, 100}, {0, 100, 100}, {0, 100, 100}},
-    {{0, 100, 100}, {0, 100, 100}, {0, 100, 100}, {0, 100, 100}}
-};
+// int Animation::canvas[4][4][3] = {
+//     {{0, 100, 100}, {0, 100, 100}, {0, 100, 100}, {0, 100, 100}},
+//     {{0, 100, 100}, {0, 100, 100}, {0, 100, 100}, {0, 100, 100}},
+//     {{0, 100, 100}, {0, 100, 100}, {0, 100, 100}, {0, 100, 100}},
+//     {{0, 100, 100}, {0, 100, 100}, {0, 100, 100}, {0, 100, 100}}
+// };
