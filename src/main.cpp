@@ -11,7 +11,7 @@ void setup()
     Wire.begin();
     Matrix::begin();
     Sensor::begin();
-    Matrix::set_brightness(1);
+    Matrix::set_brightness(20);
 }
 
 void loop()
