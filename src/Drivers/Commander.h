@@ -24,6 +24,7 @@ bool gui_mode = false;
 void cmd_gui_on(SerialCommands* sender)
 {
     sender->GetSerial()->println("GUI is on.");
+    Matrix::toggle_subpixel(LED1202_GLOBAL_ADDR, (uint16_t)0x0FFFU, false);
     gui_mode = true;
 }
 

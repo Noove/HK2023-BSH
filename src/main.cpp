@@ -13,8 +13,8 @@ void setup()
     // Subsystem Init
     Matrix::begin();
     Sensor::begin();
-    Matrix::set_brightness(20);
     Commander::begin();
+    Matrix::set_brightness(100);
 }
 
 void loop()

@@ -75,8 +75,6 @@ public:
             {
                 Matrix::set_brightness(Matrix::get_brightness() + 5);
             }
-
-            Serial.println(Matrix::get_brightness());
         }
 
         Sensor::detect_shake();  
