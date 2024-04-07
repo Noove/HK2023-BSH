@@ -6,8 +6,8 @@
 /* -------------------------------------------------------------------------- */
 
 #include "amogus.h"
-#include "megalovania.h"
-#include "audio_1.h"
+#include "audio.h"
+// #include "voice.h"
 
 uint32_t current_sample = 0;
 uint32_t start = 0;
@@ -19,7 +19,7 @@ void play_audio(const uint8_t *data, uint32_t samplerate, uint32_t num_cells)
 
     uint8_t sample_value = data[current_sample];
     if (current_sample < num_cells)
-        analogWrite(13, sample_value);
+        analogWrite(13, 255 - sample_value);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -175,26 +175,60 @@ void generateWave(WaveType type, uint16_t freq)
     case SAWTOOTH:
         // Calculate current value of a sawtooth wave with given frequency at current time
         sample_value = 255 * 2 * abs(int16_t((elapsed_micros % period) - period)) / period;
-        setDisplay(INVERTED_LETTERS_REVERSED[18], INVERTED_LETTERS_REVERSED[0], INVERTED_LETTERS_REVERSED[22], 0xFF);
         break;
     case SQUARE:
         // Calculate square wave value
         sample_value = (elapsed_micros % period) < period / 2 ? 0 : 255;
-        setDisplay(INVERTED_LETTERS_REVERSED[18], INVERTED_LETTERS_REVERSED[17], INVERTED_LETTERS_REVERSED[18], 0xFF);
         break;
     case TRIANGLE:
         sample_value = 255 * 2 * abs(int16_t((elapsed_micros % period) - period / 2)) / period;
-        setDisplay(INVERTED_LETTERS_REVERSED[19], INVERTED_LETTERS_REVERSED[17], INVERTED_LETTERS_REVERSED[6], 0xFF);
         break;
     case SINE:
         // Calculate sine wave value
         sample_value = 127 + 127 * sin(2 * PI * freq * elapsed_micros / 1000000);
-        setDisplay(INVERTED_LETTERS_REVERSED[18], INVERTED_LETTERS_REVERSED[8], INVERTED_LETTERS_REVERSED[13], 0xFF);
         break;
     }
 
     // Output sample
     analogWrite(13, sample_value);
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                 Music Scale                                */
+/* -------------------------------------------------------------------------- */
+
+enum Recordings
+{
+    SCALE,
+    PC
+};
+
+Recordings recording = SCALE;
+
+#define TONE_USE_INT
+#define TONE_PITCH 440
+
+#include <TonePitch.h>
+
+uint8_t note_index = 0;
+uint32_t last_incr = 0;
+
+void playScale()
+{
+    // Define the number of notes
+    const int numNotes = 8;
+
+    // Define the notes
+    uint16_t notes[numNotes] = {NOTE_C4, NOTE_D4, NOTE_E4, NOTE_F4, NOTE_G4, NOTE_A4, NOTE_B4, NOTE_C5};
+
+    // Increment each 0.5 seconds
+    if (millis() > last_incr + 500)
+    {
+        note_index = (note_index + 1) % numNotes;
+        last_incr = millis() + 1;
+    }
+
+    generateWave(SAWTOOTH, notes[note_index]);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -222,6 +256,7 @@ void btn1()
 void btn2()
 {
     program = REC;
+    recording = (Recordings)((recording + 1) % 2);
 
     // Reset audio
     current_sample = 0;
@@ -299,6 +334,7 @@ void voiceDemo()
     voice.say(sp2_PULL);
     voice.say(sp2_UP);
     delay(1000);
+    analogWriteResolution(8);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -310,14 +346,37 @@ void loop()
     switch (program)
     {
     case SIG:
-        generateWave(current_wave, 440);
         setLEDs(0b100);
+        generateWave(current_wave, 440);
+        switch (current_wave)
+        {
+        case SQUARE:
+            setDisplay(INVERTED_LETTERS_REVERSED[18], INVERTED_LETTERS_REVERSED[17], INVERTED_LETTERS_REVERSED[18], 0xFF);
+            break;
+        case SAWTOOTH:
+            setDisplay(INVERTED_LETTERS_REVERSED[18], INVERTED_LETTERS_REVERSED[0], INVERTED_LETTERS_REVERSED[22], 0xFF);
+            break;
+        case TRIANGLE:
+            setDisplay(INVERTED_LETTERS_REVERSED[19], INVERTED_LETTERS_REVERSED[17], INVERTED_LETTERS_REVERSED[6], 0xFF);
+            break;
+        case SINE:
+            setDisplay(INVERTED_LETTERS_REVERSED[18], INVERTED_LETTERS_REVERSED[8], INVERTED_LETTERS_REVERSED[13], 0xFF);
+            break;
+        }
         break;
     case REC:
         setLEDs(0b010);
-        setDisplay(INVERTED_LETTERS_REVERSED[17], INVERTED_LETTERS_REVERSED[14], INVERTED_LETTERS_REVERSED[2], 0xFF);
-        // play_audio(amogus_DATA, amogus_SAMPLERATE, amogus_NUM_CELLS);
-        play_audio(AUDIO_DATA, AUDIO_SAMPLERATE, AUDIO_NUM_CELLS);
+        switch (recording)
+        {
+        case SCALE:
+            setDisplay(INVERTED_LETTERS_REVERSED[18], INVERTED_LETTERS_REVERSED[2], INVERTED_LETTERS_REVERSED[11], 0xFF);
+            playScale();
+            break;
+        case PC:
+            setDisplay(INVERTED_LETTERS_REVERSED[15], INVERTED_LETTERS_REVERSED[2], 0xFF, 0xFF);
+            play_audio(AUDIO_DATA, AUDIO_SAMPLERATE, AUDIO_NUM_CELLS);
+            break;
+        }
         break;
     case VOC:
         setLEDs(0b001);

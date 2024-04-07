@@ -836,7 +836,7 @@ extern "C"
         // PWM_OUTPUT_FUNCTION(nextPwm);
         float comp_value = nextPwm * 1.5f;
 
-        analogWrite(PA4, comp_value);
+        // analogWrite(PA4, comp_value);
         analogWrite(PA5, comp_value);
 #endif
 
